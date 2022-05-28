@@ -117,7 +117,7 @@ export default {
             dailyForcasts: [],
             currentSunrise: 0,
             currentSunset: 0,
-            iconSrc: "http://openweathermap.org/img/wn/",
+            iconSrc: "https://openweathermap.org/img/wn/",
         };
     },
     methods: {
@@ -219,7 +219,7 @@ export default {
             this.lang = navigator.language || navigator.userLanguage;
             try {
                 const cityResponse = await axios.get(
-                    "http://api.openweathermap.org/geo/1.0/reverse?",
+                    "https://api.openweathermap.org/geo/1.0/reverse?",
                     {
                         params: {
                             lat: this.lat,
