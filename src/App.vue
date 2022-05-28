@@ -398,6 +398,7 @@ export default {
     position: sticky;
     top: 0;
     background-color: #112936;
+    z-index: 10;
 }
 
 .current__city {
