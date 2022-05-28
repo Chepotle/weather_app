@@ -1,5 +1,11 @@
 <template>
-    <div class="hours">
+    <div
+        class="hours"
+        @mousedown="mouseDown"
+        @mousemove="mouseScroll"
+        @mouseleave="noScroll"
+        @mouseup="noScroll"
+    >
         <div v-for="item in hourlyForcasts" :key="item.dt" class="hours__item">
             <div class="hours__time">
                 {{ new Date(item.dt * 1000).getHours() }}:00
@@ -27,9 +33,28 @@ export default {
     data() {
         return {
             mouseIsDown: false,
-            cursorX: 0,
-            elCoordX: 0,
+            startX: null,
+            scrollLeft: null,
         };
+    },
+    methods: {
+        mouseDown(e) {
+            this.mouseIsDown = true;
+            e.currentTarget.style.cursor = "grabbing";
+            this.startX = e.pageX - e.currentTarget.offsetLeft;
+            this.scrollLeft = e.currentTarget.scrollLeft;
+        },
+        mouseScroll(e) {
+            if (this.mouseIsDown) {
+                const x = e.pageX - e.currentTarget.offsetLeft;
+                const scroll = x - this.startX;
+                e.currentTarget.scrollLeft = this.scrollLeft - scroll;
+            }
+        },
+        noScroll(e) {
+            this.mouseIsDown = false;
+            e.currentTarget.style.cursor = "grab";
+        },
     },
 };
 </script>
@@ -41,6 +66,8 @@ export default {
     margin-top: 50px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.5);
     padding-bottom: 20px;
+    user-select: none;
+    cursor: grab;
 }
 
 .hours::-webkit-scrollbar {
@@ -71,5 +98,6 @@ export default {
 .hours__icon img {
     width: 50px;
     height: 50px;
+    -webkit-user-drag: none;
 }
 </style>
