@@ -66,7 +66,7 @@ export default {
     data() {
         return {
             radius: 55,
-            circumference: 0,
+            circumference: null,
             scaleStyles: {},
             indicatorStyles: {
                 strokeDasharray: "345.575 345.575",

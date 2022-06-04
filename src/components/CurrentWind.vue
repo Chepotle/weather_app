@@ -36,7 +36,7 @@ export default {
                 animationDuration: "0s",
             },
             windInfo: "",
-            bofortScale: 0,
+            bofortScale: null,
             currentWindDirection: "",
         };
     },

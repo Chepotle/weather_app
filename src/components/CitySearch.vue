@@ -1,6 +1,6 @@
 <template>
     <div class="city">
-        <div class="city__header">Выберете город</div>
+        <div class="city__header">Поиск</div>
         <div class="city__input">
             <input
                 v-model="query"
@@ -33,7 +33,7 @@ export default {
             token: "74978961c53a79474304faf762f67e15860eb867",
             searchSuggestions: [],
             searchStyles: {},
-            cityId: 0,
+            cityId: null,
         };
     },
     methods: {

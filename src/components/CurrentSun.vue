@@ -46,7 +46,7 @@ export default {
     data() {
         return {
             pathStyles: {},
-            timePercent: 0,
+            timePercent: null,
         };
     },
     methods: {
