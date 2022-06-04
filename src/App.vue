@@ -295,7 +295,8 @@ export default {
                 this.dataIsReady = true;
                 this.geoIsOff = false;
             } catch (e) {
-                alert("Ошибка");
+                this.noGeo = true;
+                this.geoIsOff = true;
             }
         },
     },

@@ -1,5 +1,6 @@
 <template>
     <div class="city">
+        <div class="city__header">Выберете город</div>
         <div class="city__input">
             <input
                 v-model="query"
@@ -85,9 +86,15 @@ export default {
 <style scoped>
 .city {
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     width: 100%;
     padding: 20px 20px 0;
+}
+
+.city__header {
+    font-size: 28px;
+    margin-bottom: 15px;
 }
 
 .city__input {
