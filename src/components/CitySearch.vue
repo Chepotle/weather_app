@@ -1,12 +1,12 @@
 <template>
     <div class="city">
-        <div class="city__header">Поиск</div>
+        <div class="city__header">Выберете город</div>
         <div class="city__input">
             <input
                 v-model="query"
                 @input="searchHelp"
                 :style="searchStyles"
-                placeholder="Поиск города"
+                placeholder="Поиск"
                 type="text"
             />
             <div class="city__search">
