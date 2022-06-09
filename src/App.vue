@@ -395,7 +395,7 @@ export default {
     display: flex;
     align-items: flex-end;
     justify-content: center;
-    padding-top: 15px;
+    padding: 15px 0;
     position: sticky;
     top: 0;
     background-color: #112936;
