@@ -3,7 +3,7 @@
         <div class="daily__item" v-for="item in dailyForcasts" :key="item.dt">
             <div class="daily__date">
                 {{
-                    new Date(item.dt * 1000).toLocaleString(this.lang, {
+                    new Date(item.dt * 1000).toLocaleString(lang, {
                         weekday: "short",
                         day: "2-digit",
                         month: "short",
@@ -14,7 +14,7 @@
                 <img :src="iconSrc + item.weather[0].icon + '@2x.png'" alt="" />
             </div>
             <div class="daily__pop">
-                Вероятность осадков: {{ Math.round(item.pop * 100) }}%
+                Вероятность осадков: {{ Math.round((item.pop ?? 0) * 100) }}%
             </div>
             <div class="daily__temp">
                 {{ Math.round(item.temp.max) }}&deg; /
@@ -24,24 +24,16 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        dailyForcasts: {
-            type: Array,
-            required: true,
-        },
-        iconSrc: {
-            type: String,
-            required: true,
-        },
-        lang: {
-            type: String,
-            required: true,
-        },
-    },
-};
+<script setup lang="ts">
+import type { ForecastItem } from '@/types/openweather'
+
+defineProps<{
+  dailyForcasts: ForecastItem[]
+  iconSrc: string
+  lang: string
+}>()
 </script>
+
 
 <style scoped>
 .daily {

@@ -13,61 +13,57 @@
             <div class="hours__icon">
                 <img :src="iconSrc + item.weather[0].icon + '@2x.png'" alt="" />
             </div>
-            <div class="hours__temp">{{ Math.round(item.temp) }}&deg;</div>
+            <div class="hours__temp">{{ Math.round(item.main.temp) }}&deg;</div>
         </div>
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        hourlyForcasts: {
-            type: Array,
-            required: true,
-        },
-        iconSrc: {
-            type: String,
-            required: true,
-        },
-    },
-    data() {
-        return {
-            mouseIsDown: false,
-            startX: null,
-            scrollLeft: null,
-        };
-    },
-    methods: {
-        mouseDown(e) {
-            this.mouseIsDown = true;
-            e.currentTarget.style.cursor = "grabbing";
-            this.startX = e.pageX - e.currentTarget.offsetLeft;
-            this.scrollLeft = e.currentTarget.scrollLeft;
-        },
-        mouseScroll(e) {
-            if (this.mouseIsDown) {
-                const x = e.pageX - e.currentTarget.offsetLeft;
-                const scroll = x - this.startX;
-                e.currentTarget.scrollLeft = this.scrollLeft - scroll;
-            }
-        },
-        noScroll(e) {
-            this.mouseIsDown = false;
-            e.currentTarget.style.cursor = "grab";
-        },
-    },
-};
+<script setup lang="ts">
+import { ref } from 'vue'
+import type { ForecastItem } from '@/types/openweather'
+
+defineProps<{
+  hourlyForcasts: ForecastItem[]
+  iconSrc: string
+}>()
+
+const mouseIsDown = ref(false)
+const startX = ref<number | null>(null)
+const scrollLeft = ref<number | null>(null)
+
+const mouseDown = (e: MouseEvent) => {
+  const target = e.currentTarget as HTMLElement
+  mouseIsDown.value = true
+  target.style.cursor = 'grabbing'
+  startX.value = e.pageX - target.offsetLeft
+  scrollLeft.value = target.scrollLeft
+}
+
+const mouseScroll = (e: MouseEvent) => {
+  if (mouseIsDown.value) {
+    const target = e.currentTarget as HTMLElement
+    const x = e.pageX - target.offsetLeft
+    const scroll = x - Number(startX.value!)
+    target.scrollLeft = Number(scrollLeft.value!) - scroll
+  }
+}
+
+const noScroll = (e: MouseEvent) => {
+  const target = e.currentTarget as HTMLElement
+  mouseIsDown.value = false
+  target.style.cursor = 'grab'
+}
 </script>
 
 <style scoped>
 .hours {
+    justify-content: center;
     display: flex;
     overflow: auto;
     margin-top: 50px;
     border-bottom: 1px solid rgba(255, 255, 255, 0.5);
     padding-bottom: 20px;
     user-select: none;
-    cursor: grab;
 }
 
 .hours::-webkit-scrollbar {

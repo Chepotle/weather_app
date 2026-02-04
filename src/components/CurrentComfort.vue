@@ -1,6 +1,6 @@
 <template>
     <div class="comfort">
-        <div ref="observer" class="comfort__header">КОМФОРТ</div>
+        <div ref="observerRef" class="comfort__header">КОМФОРТ</div>
         <div class="comfort__block">
             <div class="comfort__section">
                 <div class="comfort__sub-header">Влажность</div>
@@ -47,67 +47,54 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        currentHumidity: {
-            type: Number,
-            required: true,
-        },
-        currentFeels: {
-            type: Number,
-            required: true,
-        },
-        currentPressure: {
-            type: Number,
-            required: true,
-        },
-    },
-    data() {
-        return {
-            radius: 55,
-            circumference: null,
-            scaleStyles: {},
-            indicatorStyles: {
-                strokeDasharray: "345.575 345.575",
-                strokeDashoffset: "345.712",
-            },
-        };
-    },
-    methods: {
-        getcircumference() {
-            this.circumference = 2 * Math.PI * this.radius;
-        },
-        setScale(percent) {
-            let offset =
-                this.circumference - (percent / 100) * this.circumference;
-            this.scaleStyles.strokeDashoffset = offset;
-            this.scaleStyles.strokeDasharray = `${this.circumference} ${this.circumference}`;
-        },
-        setProgress(percent) {
-            let offset =
-                this.circumference - (percent / 100) * this.circumference;
-            this.indicatorStyles.strokeDashoffset = offset;
-            this.indicatorStyles.strokeDasharray = `${this.circumference} ${this.circumference}`;
-        },
-    },
-    mounted() {
-        this.getcircumference();
-        this.setScale(75);
+<script setup lang="ts">
+import { ref, reactive, onMounted, watch } from 'vue'
 
-        const options = {
-            rootMargin: "0px",
-            threshold: 1.0,
-        };
-        const callback = (entries) => {
-            if (entries[0].isIntersecting) {
-                this.setProgress(Math.round(this.currentHumidity / 1.33));
-            }
-        };
-        const observer = new IntersectionObserver(callback, options);
-        observer.observe(this.$refs.observer);
-    },
-};
+const props = defineProps<{
+  currentHumidity: number
+  currentFeels: number
+  currentPressure: number
+}>()
+
+const radius = 55
+const circumference = ref(0)
+const scaleStyles = reactive({ strokeDashoffset: '', strokeDasharray: '' })
+const indicatorStyles = reactive({ strokeDasharray: '345.575 345.575', strokeDashoffset: '345.712' })
+const observerRef = ref<HTMLElement | null>(null)
+
+const calculateCircumference = () => {
+  circumference.value = 2 * Math.PI * radius
+}
+
+const animateCircle = (percent: number, styles: typeof scaleStyles) => {
+  const offset = circumference.value - (percent / 100) * circumference.value
+  styles.strokeDashoffset = offset.toString()
+  styles.strokeDasharray = `${circumference.value} ${circumference.value}`
+}
+
+onMounted(() => {
+  calculateCircumference()
+  animateCircle(75, scaleStyles)
+
+  if (observerRef .value) {
+    const observer = new IntersectionObserver((entries) => {
+      const [entry] = entries
+      if (entry.isIntersecting) {
+        const humidityPercent = Math.round(props.currentHumidity / 1.33)
+        animateCircle(humidityPercent, indicatorStyles)
+      }
+    }, {
+      threshold: 1.0
+    })
+
+    observer.observe(observerRef.value)
+  }
+})
+
+watch(() => props.currentHumidity, (newHumidity) => {
+  const humidityPercent = Math.round(newHumidity / 1.33)
+  animateCircle(humidityPercent, indicatorStyles)
+})
 </script>
 
 <style scoped>
@@ -167,10 +154,5 @@ export default {
 .comfort__feels,
 .comfort__pressure {
     padding-left: 15px;
-}
-
-/* 991 */
-
-@media (max-width: 991px) {
 }
 </style>

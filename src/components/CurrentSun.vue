@@ -1,8 +1,8 @@
 <template>
     <div class="sun">
-        <div ref="observer" class="sun__header">ВОСХОД И ЗАКАТ</div>
+        <div ref="observerRef" class="sun__header">ВОСХОД И ЗАКАТ</div>
         <div class="sun__block">
-            <div class="sun__line" ref="sunLine">
+            <div class="sun__line" ref="sunLineRef">
                 <div class="sun__path" :style="pathStyles">
                     <div class="sun__icon">
                         <img ref="sun" src="../assets/icons/sunny.png" alt="" />
@@ -31,95 +31,99 @@
     </div>
 </template>
 
-<script>
-export default {
-    props: {
-        currentSunrise: {
-            type: Number,
-            required: true,
-        },
-        currentSunset: {
-            type: Number,
-            required: true,
-        },
-    },
-    data() {
-        return {
-            pathStyles: {},
-            timePercent: null,
-        };
-    },
-    methods: {
-        setSunlineWidth() {
-            let width = this.$refs.sunLine.offsetWidth * 0.8 + "px";
-            this.pathStyles.width = width;
-            this.pathStyles.height = width;
-        },
-        getTimePercent() {
-            let currentTime = Math.round(Date.now() / 1000);
+<script setup lang="ts">
+import { ref, reactive, onMounted, watch } from 'vue'
 
-            let day = this.currentSunset - this.currentSunrise;
-            if (currentTime <= this.currentSunset) {
-                let lastSunTime = this.currentSunset - currentTime;
-                this.timePercent = 100 - Math.round((lastSunTime / day) * 100);
-            } else {
-                this.timePercent = 100;
-                this.$refs.sun.style.opacity = ".5";
-            }
-        },
+const props = defineProps<{
+  currentSunrise: number
+  currentSunset: number
+}>()
 
-        setSunPosition(percent) {
-            if (percent != 100) {
-                this.pathStyles.transitionDuration = percent * 0.08 + "s";
-            } else {
-                this.pathStyles.transitionDuration = "0s";
-            }
-            if (window.innerWidth <= 991 && window.innerWidth > 767) {
-                let position = (145 * percent) / 100 + 17;
-                this.pathStyles.transform =
-                    "translate(-50%, -35%) " + `rotate(${position}deg)`;
-            } else if (window.innerWidth <= 767 && window.innerWidth > 575) {
-                let position = (157 * percent) / 100 + 11;
-                this.pathStyles.transform =
-                    "translate(-50%, -40%) " + `rotate(${position}deg)`;
-            } else if (window.innerWidth <= 575) {
-                let position = (180 * percent) / 100;
-                this.pathStyles.transform =
-                    "translate(-50%, -50%) " + `rotate(${position}deg)`;
-            } else {
-                let position = (119.5 * percent) / 100 + 30;
-                this.pathStyles.transform =
-                    "translate(-50%, -25%) " + `rotate(${position}deg)`;
-            }
-        },
-    },
-    mounted() {
-        if (window.innerWidth <= 991 && window.innerWidth > 767) {
-            this.pathStyles.transform =
-                "translate(-50%, -35%) " + "rotate(17deg)";
-        } else if (window.innerWidth <= 767 && window.innerWidth > 575) {
-            this.pathStyles.transform =
-                "translate(-50%, -40%) " + "rotate(11deg)";
-        } else if (window.innerWidth <= 575) {
-            this.pathStyles.transform =
-                "translate(-50%, -50%) " + "rotate(0deg)";
-        }
-        this.setSunlineWidth();
-        this.getTimePercent();
+const pathStyles = reactive({
+  width: '',
+  height: '',
+  transform: '',
+  transitionDuration: ''
+})
+const timePercent = ref(0)
+const sunLineRef = ref<HTMLElement | null>(null)
+const observerRef = ref<HTMLElement | null>(null)
 
-        const options = {
-            rootMargin: "0px",
-            threshold: 1.0,
-        };
-        const callback = (entries) => {
-            if (entries[0].isIntersecting) {
-                this.setSunPosition(this.timePercent);
-            }
-        };
-        const observer = new IntersectionObserver(callback, options);
-        observer.observe(this.$refs.observer);
-    },
-};
+const getWindowSize = (): number => window.innerWidth
+
+const setSunlineWidth = (): void => {
+  if (sunLineRef.value) {
+    const width = sunLineRef.value.offsetWidth * 0.8 + 'px'
+    pathStyles.width = width
+    pathStyles.height = width
+  }
+}
+
+const calculateTimePercent = (): void => {
+  const currentTime = Math.round(Date.now() / 1000)
+
+  const dayDuration = props.currentSunset - props.currentSunrise
+  const timeLeftToSunset = props.currentSunset - currentTime
+
+  if (currentTime <= props.currentSunset) {
+    timePercent.value = 100 - Math.round((timeLeftToSunset / dayDuration) * 100)
+  } else {
+    timePercent.value = 100
+
+    if (sunLineRef.value?.querySelector('.sun')) {
+      (sunLineRef.value.querySelector('.sun') as HTMLElement)?.style.setProperty('opacity', '.5')
+    }
+  }
+}
+
+const getRotationAngle = (percent: number): number => {
+  const width = getWindowSize()
+
+  if (width <= 991 && width > 767) return (145 * percent) / 100 + 17
+  if (width <= 767 && width > 575) return (157 * percent) / 100 + 11
+  if (width <= 575) return (180 * percent) / 100
+  return (119.5 * percent) / 100 + 30
+}
+
+const getTransform = (percent: number): string => {
+  const angle = getRotationAngle(percent)
+  const translateY = getWindowSize() <= 575 ? '-50%' :
+      getWindowSize() <= 767 ? '-40%' : '-25%'
+
+  return `translate(-50%, ${translateY}) rotate(${angle}deg)`
+}
+
+const setSunPosition = (percent: number): void => {
+  pathStyles.transitionDuration = percent !== 100 ? `${percent * 0.08}s` : '0s'
+  pathStyles.transform = getTransform(percent)
+}
+
+const setInitialTransform = (): void => {
+  const angle = getRotationAngle(0)
+  const translateY = getWindowSize() <= 575 ? '-50%' :
+      getWindowSize() <= 767 ? '-40%' : '-35%'
+
+  pathStyles.transform = `translate(-50%, ${translateY}) rotate(${angle}deg)`
+}
+
+onMounted(() => {
+  setInitialTransform()
+  setSunlineWidth()
+  calculateTimePercent()
+
+  if (observerRef.value) {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        setSunPosition(timePercent.value)
+      }
+    }, { threshold: 1.0 })
+
+    observer.observe(observerRef.value)
+  }
+})
+
+watch([() => props.currentSunrise, () => props.currentSunset], calculateTimePercent)
+watch(timePercent, setSunPosition)
 </script>
 
 <style>
