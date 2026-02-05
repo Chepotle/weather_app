@@ -15,6 +15,11 @@ npm run serve
 npm run build
 ```
 
+### Test production build
+```
+npx serve -s dist
+```
+
 ### Lints and fixes files
 ```
 npm run lint
