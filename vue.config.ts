@@ -1,5 +1,5 @@
 module.exports = {
-  publicPath: '/weather_app/',
+    publicPath: process.env.NODE_ENV === 'production' ? './' : '/',
   pwa: {
     name: 'Прогноз погоды',
     short_name: 'Погода',
